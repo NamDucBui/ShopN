@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+  fullname String
+  phone String?
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order Order[]
+
+  cart Cart?
+}
+
+enum Role{
+  USER
+  ADMIN
+}
+
+model Cart{
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cartItems CartItem[]
+}
+
+model CartItem{
+  id Int @id @default(autoincrement())
+  cartId Int
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  prouductId String
+  productSku String
+  quantity Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productSku])
+}
+
+model Inventory {
+  id Int @id @default(autoincrement())
+  productSku String @unique
+  stock Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order{
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  totalPrice Float
+  status OrderStatus @default(PENDING)
+  address String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+enum OrderStatus{
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem{
+  id Int @id @default(autoincrement())
+  orderId Int 
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  prouductId String
+  productSku String
+  productName String
+  price Float
+  quantity Int
+}
+
+
