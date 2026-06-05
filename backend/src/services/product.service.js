@@ -3,14 +3,15 @@ const Product = require("../models/Product");
 
 class ProductService {
     async createProduct(productData, initStock = 0) {
+
         const existingInventory = await prisma.inventory.count({
             where: { productSku: productData.sku }
         })
-        console.log(existingInventory);
-        if (existingInventory) {
 
+        if (existingInventory) {
             throw new Error(`${productData.sku} is exist`)
         }
+
         const newProduct = await Product.create(productData)
 
         try {
@@ -108,7 +109,7 @@ class ProductService {
                 }
             })
             updatedProduct.stock = stock
-        } 
+        }
         else {
             const inventory = await prisma.inventory.findUnique({
                 where: {
@@ -120,13 +121,13 @@ class ProductService {
         return updatedProduct
     }
 
-    async deleteProduct(id){
+    async deleteProduct(id) {
         const product = await Product.findById(id)
-        if(!product){
+        if (!product) {
             throw new Error('Product not found')
         }
         await prisma.inventory.deleteMany({
-            where: {productSku: product.sku}
+            where: { productSku: product.sku }
         })
         await Product.findByIdAndDelete(id)
         return product
